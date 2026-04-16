@@ -5,13 +5,17 @@ namespace Core.Specifications;
 
 public class ProductSpecification: BaseSpecifications<Product>
 {
-    public ProductSpecification(string? brand, string? type, string? sort)
-        : base(x => (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
-                    (string.IsNullOrWhiteSpace(type) || x.Type == type))
+    public ProductSpecification(ProductSpecParams productParams)
+     : base(x => 
+            (string.IsNullOrEmpty(productParams.Search) || x.Name.ToLower().Contains(productParams.Search)) &&
+            (productParams.Brands.Count == 0 || productParams.Brands.Contains(x.Brand)) &&
+            (productParams.Types.Count == 0 || productParams.Types.Contains(x.Type))
+            )
     {
-        if (!string.IsNullOrWhiteSpace(sort))
+        ApplyPaging((productParams.PageIndex - 1) * productParams.PageSize, productParams.PageSize);
+        if (!string.IsNullOrWhiteSpace(productParams.Sort))
         {
-            switch (sort.ToLower())
+            switch (productParams.Sort.ToLower())
             {
                 case "price":
                     AddOrderBy(p => p.Price);
@@ -31,5 +35,4 @@ public class ProductSpecification: BaseSpecifications<Product>
             }
         }
     }
-
 }
