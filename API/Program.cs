@@ -1,3 +1,4 @@
+using Core.Entities;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Services;
@@ -22,7 +23,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200","https://localhost:4200");
+        policy.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins("http://localhost:4200","https://localhost:4200");
     });
 });
 
@@ -33,6 +34,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config=>{
 });
 
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+    .AddEntityFrameworkStores<StoreContext>();
 
 var app = builder.Build();
 
@@ -48,6 +52,7 @@ app.UseAuthorization();
 app.UseMiddleware<API.Middleware.ExceptionMiddleware>();
 app.UseCors("CorsPolicy");
 app.MapControllers();
+app.MapGroup("api").MapIdentityApi<AppUser>();
 
 try
 {
